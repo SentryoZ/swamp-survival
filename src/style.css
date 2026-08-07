@@ -1,0 +1,146 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #0a0f14;
+  font-family: "Segoe UI", system-ui, sans-serif;
+  color: #fff;
+  user-select: none;
+}
+
+canvas {
+  display: block;
+}
+
+#hud {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 10;
+}
+
+#hp-bar-wrap {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 320px;
+  height: 18px;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+#hp-bar {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, #e53935, #ff6f61);
+  transition: width 0.1s linear;
+}
+
+#xp-bar-wrap {
+  position: absolute;
+  top: 38px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 320px;
+  height: 8px;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+#xp-bar {
+  width: 0%;
+  height: 100%;
+  background: linear-gradient(90deg, #00c853, #69f0ae);
+  transition: width 0.15s ease;
+}
+
+#level {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(190px);
+  font-size: 14px;
+  font-weight: 700;
+  text-shadow: 0 1px 2px #000;
+}
+
+#kills {
+  position: absolute;
+  top: 20px;
+  right: 24px;
+  font-size: 16px;
+  font-weight: 600;
+  text-shadow: 0 1px 2px #000;
+}
+
+#timer {
+  position: absolute;
+  bottom: 16px;
+  left: 24px;
+  font-size: 16px;
+  font-weight: 600;
+  text-shadow: 0 1px 2px #000;
+}
+
+#overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  background: rgba(6, 10, 14, 0.72);
+  pointer-events: auto;
+}
+
+#overlay.hidden {
+  display: none;
+}
+
+#overlay h1 {
+  font-size: 56px;
+  letter-spacing: 6px;
+  color: #ff5252;
+  text-shadow: 0 4px 20px rgba(255, 82, 82, 0.4);
+}
+
+#overlay p {
+  color: #aab6c0;
+  font-size: 16px;
+}
+
+#start-btn {
+  margin-top: 8px;
+  padding: 14px 48px;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  background: #ff5252;
+  color: #fff;
+  transition: transform 0.1s ease, background 0.1s ease;
+}
+
+#start-btn:hover {
+  background: #ff7a7a;
+  transform: scale(1.05);
+}
+
+#start-btn:active {
+  transform: scale(0.97);
+}
