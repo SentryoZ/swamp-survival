@@ -518,20 +518,25 @@ function computeMods() {
   if (state.hp > state.maxHp) state.hp = state.maxHp;
 }
 
-function computeWeapon(w) {
-  const def = WEAPONS[w.id];
-  const L = w.level;
+function weaponBaseStats(id, level) {
+  const def = WEAPONS[id];
   const b = def.base;
   const p = def.per || {};
   const s = {};
   for (const key of Object.keys(b)) {
     let v = b[key];
-    if (key === "count" && p.countEvery) v += Math.floor((L - 1) / p.countEvery);
-    else if (key === "strikes" && p.strikesEvery) v += Math.floor((L - 1) / p.strikesEvery);
-    else if (key === "jumps" && p.jumpsEvery) v += Math.floor((L - 1) / p.jumpsEvery);
-    else if (p[key] !== undefined) v += p[key] * (L - 1);
+    if (key === "count" && p.countEvery) v += Math.floor((level - 1) / p.countEvery);
+    else if (key === "strikes" && p.strikesEvery) v += Math.floor((level - 1) / p.strikesEvery);
+    else if (key === "jumps" && p.jumpsEvery) v += Math.floor((level - 1) / p.jumpsEvery);
+    else if (p[key] !== undefined) v += p[key] * (level - 1);
     s[key] = v;
   }
+  return s;
+}
+
+function computeWeapon(w) {
+  const def = WEAPONS[w.id];
+  const s = weaponBaseStats(w.id, w.level);
   const m = state.mods;
   if (s.damage !== undefined) s.damage *= m.damage;
   if (s.dps !== undefined) s.dps *= m.damage;
@@ -548,6 +553,41 @@ function computeWeapon(w) {
   }
   if (def.tags.includes("pierce")) s.pierce = m.pierce;
   return s;
+}
+
+const PREVIEW_LABELS = {
+  damage: { label: "Damage", fmt: (v) => Math.round(v) },
+  dps: { label: "DoT/s", fmt: (v) => v.toFixed(1) },
+  cooldown: { label: "Cooldown", fmt: (v) => `${v.toFixed(2)}s` },
+  count: { label: "Count", fmt: (v) => Math.round(v) },
+  strikes: { label: "Strikes", fmt: (v) => Math.round(v) },
+  jumps: { label: "Jumps", fmt: (v) => Math.round(v) },
+  jumpRange: { label: "Chain range", fmt: (v) => v.toFixed(1) },
+  radius: { label: "Radius", fmt: (v) => v.toFixed(1) },
+  area: { label: "Area", fmt: (v) => v.toFixed(1) },
+  blast: { label: "Blast", fmt: (v) => v.toFixed(1) },
+  speed: { label: "Speed", fmt: (v) => v.toFixed(1) },
+  tick: { label: "Hit delay", fmt: (v) => `${v.toFixed(2)}s` },
+  hold: { label: "Hold", fmt: (v) => `${v.toFixed(1)}s` },
+  duration: { label: "Duration", fmt: (v) => `${v.toFixed(1)}s` },
+  life: { label: "Life", fmt: (v) => `${v.toFixed(1)}s` },
+  rate: { label: "Fire rate", fmt: (v) => `${v.toFixed(2)}s` },
+  drain: { label: "Drain", fmt: (v) => v.toFixed(2) },
+  slow: { label: "Slow", fmt: (v) => `${Math.round(v * 100)}%` },
+};
+
+// Stats that change between the current level and the next, for the card UI.
+function weaponPreview(w) {
+  const from = weaponBaseStats(w.id, w.level);
+  const to = weaponBaseStats(w.id, w.level + 1);
+  const lines = [];
+  for (const key of Object.keys(to)) {
+    const meta = PREVIEW_LABELS[key];
+    if (!meta || from[key] === undefined) continue;
+    if (Math.abs(to[key] - from[key]) < 1e-6) continue;
+    lines.push({ label: meta.label, from: meta.fmt(from[key]), to: meta.fmt(to[key]) });
+  }
+  return lines;
 }
 
 function rollDamage(base) {
@@ -1611,10 +1651,22 @@ function renderUpgradeCards() {
     el.style.setProperty("--c", TIERS[card.tier].color);
     const lvl =
       card.type === "weapon-new" ? "NEW" : `Lv ${card.level} \u2192 ${card.level + 1}`;
+    let statsHtml = "";
+    if (card.type === "weapon-up") {
+      const w = state.weapons.find((x) => x.id === card.id);
+      const lines = w ? weaponPreview(w) : [];
+      statsHtml = lines
+        .map(
+          (l) =>
+            `<span class="card-stat"><em>${l.label}</em>${l.from} <b>${l.to}</b></span>`
+        )
+        .join("");
+    }
     el.innerHTML =
       `<span class="card-icon" style="color:${card.def.color}">${card.def.icon}</span>` +
       `<span class="card-name">${card.def.name}</span>` +
       `<span class="card-desc">${card.def.desc}</span>` +
+      (statsHtml ? `<span class="card-stats">${statsHtml}</span>` : "") +
       `<span class="card-lv">${lvl}</span>`;
     el.addEventListener("click", () => chooseCard(card));
     hud.upgradeCards.appendChild(el);
