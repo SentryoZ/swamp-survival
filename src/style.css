@@ -13,10 +13,14 @@ body {
   font-family: "Segoe UI", system-ui, sans-serif;
   color: #fff;
   user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+  overscroll-behavior: none;
 }
 
 canvas {
   display: block;
+  touch-action: none;
 }
 
 #hud {
@@ -143,4 +147,188 @@ canvas {
 
 #start-btn:active {
   transform: scale(0.97);
+}
+
+#build {
+  position: absolute;
+  top: 64px;
+  left: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  pointer-events: none;
+}
+
+.build-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px 2px 6px;
+  background: rgba(0, 0, 0, 0.45);
+  border-left: 3px solid var(--c);
+  border-radius: 4px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.build-item b {
+  color: var(--c);
+  font-size: 15px;
+}
+
+.build-item i {
+  font-style: normal;
+  font-size: 11px;
+  font-weight: 700;
+  opacity: 0.75;
+}
+
+#upgrade-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  background: rgba(6, 10, 14, 0.82);
+  pointer-events: auto;
+  z-index: 20;
+}
+
+#upgrade-overlay.hidden {
+  display: none;
+}
+
+#upgrade-title {
+  font-size: 32px;
+  letter-spacing: 5px;
+  color: #ffd54f;
+  text-shadow: 0 4px 20px rgba(255, 213, 79, 0.35);
+}
+
+#upgrade-cards {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 16px;
+  max-width: 720px;
+}
+
+.upgrade-card {
+  width: 200px;
+  min-height: 210px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 18px 14px;
+  font-family: inherit;
+  color: #fff;
+  text-align: center;
+  cursor: pointer;
+  background: linear-gradient(180deg, rgba(38, 50, 56, 0.95), rgba(18, 24, 28, 0.95));
+  border: 2px solid var(--c);
+  border-radius: 10px;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+
+.upgrade-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.5), 0 0 16px var(--c);
+}
+
+.upgrade-card:active {
+  transform: translateY(-1px) scale(0.98);
+}
+
+.card-icon {
+  font-size: 40px;
+  line-height: 1;
+}
+
+.card-name {
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.card-desc {
+  flex: 1;
+  font-size: 13px;
+  line-height: 1.4;
+  color: #aab6c0;
+}
+
+.card-lv {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--c);
+}
+
+#reroll-btn {
+  padding: 10px 30px;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: #cfd8dc;
+  cursor: pointer;
+  background: #263238;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  transition: background 0.1s ease;
+}
+
+#reroll-btn:hover:not(:disabled) {
+  background: #37474f;
+}
+
+#reroll-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+#auto {
+  position: absolute;
+  bottom: 16px;
+  right: 24px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: #69f0ae;
+  text-shadow: 0 1px 2px #000;
+}
+
+#auto.off {
+  color: #90a4ae;
+}
+
+#joystick {
+  position: fixed;
+  width: 120px;
+  height: 120px;
+  margin: 0;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 15;
+}
+
+#joystick.hidden {
+  display: none;
+}
+
+#joystick-knob {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.38);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
 }
