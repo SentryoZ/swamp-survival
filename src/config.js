@@ -78,8 +78,8 @@ export const GAME = {
   startFireRate: 3,
   baseDamage: 12,
   projectileSpeed: 34,
-  maxEnemies: 120,
-  enemyScalePerMinute: 1.05,
+  maxEnemies: 160,
+  enemyScalePerMinute: 1.2,
   maxWeapons: 5,
   rerollsPerLevel: 1,
   xpToLevel: (level) => 5 + (level - 1) * 5 + Math.floor((level - 1) ** 1.4),
@@ -234,8 +234,8 @@ export const PASSIVES = {
   },
   haste: {
     name: "Haste", icon: "\u29d7", color: "#4fc3f7", tier: "common", maxLevel: 8,
-    desc: "All weapons +10% rate",
-    mod: (m, lv) => { m.haste *= Math.pow(1.1, lv); },
+    desc: "All weapons +5% rate",
+    mod: (m, lv) => { m.haste *= Math.pow(1.05, lv); },
   },
   vitality: {
     name: "Vitality", icon: "\u2764", color: "#ef5350", tier: "common", maxLevel: 8,
