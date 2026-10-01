@@ -30,6 +30,79 @@ canvas {
   z-index: 10;
 }
 
+#vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.12s linear;
+  background: radial-gradient(ellipse at center, rgba(255, 0, 0, 0) 42%, rgba(190, 0, 0, 0.8) 100%);
+}
+
+#flash {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(ellipse at center, rgba(255, 80, 80, 0) 50%, rgba(255, 60, 60, 0.6) 100%);
+}
+
+#flash.show {
+  animation: flashPulse 0.34s ease-out;
+}
+
+@keyframes flashPulse {
+  0% { opacity: 0.95; }
+  100% { opacity: 0; }
+}
+
+#banner {
+  position: absolute;
+  top: 28%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.8);
+  pointer-events: none;
+  font-size: 34px;
+  font-weight: 800;
+  letter-spacing: 4px;
+  opacity: 0;
+  text-shadow: 0 3px 16px rgba(0, 0, 0, 0.75);
+}
+
+#banner.show {
+  animation: bannerPop 1.15s ease-out;
+}
+
+@keyframes bannerPop {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.7); }
+  15% { opacity: 1; transform: translate(-50%, -50%) scale(1.06); }
+  68% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(1); }
+}
+
+#dmg-layer {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.dmg {
+  position: absolute;
+  left: 0;
+  top: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #ffffff;
+  text-shadow: 0 1px 3px #000;
+  will-change: transform, opacity;
+}
+
+.dmg.crit {
+  font-size: 21px;
+  color: #ffd54f;
+}
+
 #hp-bar-wrap {
   position: absolute;
   top: 16px;
@@ -47,6 +120,30 @@ canvas {
   width: 100%;
   height: 100%;
   background: linear-gradient(90deg, #e53935, #ff6f61);
+  transition: width 0.1s linear;
+}
+
+#boss-bar-wrap {
+  position: absolute;
+  top: 62px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 380px;
+  height: 12px;
+  background: rgba(0, 0, 0, 0.65);
+  border: 1px solid rgba(213, 0, 249, 0.7);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+#boss-bar-wrap.hidden {
+  display: none;
+}
+
+#boss-bar {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, #7b1fa2, #d500f9);
   transition: width 0.1s linear;
 }
 
@@ -317,6 +414,38 @@ canvas {
   cursor: default;
 }
 
+#starter-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  background: rgba(6, 10, 14, 0.9);
+  pointer-events: auto;
+  z-index: 30;
+}
+
+#starter-overlay.hidden {
+  display: none;
+}
+
+#starter-title {
+  font-size: 34px;
+  letter-spacing: 6px;
+  color: #ffd54f;
+  text-shadow: 0 4px 20px rgba(255, 213, 79, 0.35);
+}
+
+#starter-cards {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 18px;
+  max-width: 760px;
+}
+
 #auto {
   position: absolute;
   bottom: 16px;
@@ -330,6 +459,156 @@ canvas {
 
 #auto.off {
   color: #90a4ae;
+}
+
+#sound {
+  position: absolute;
+  bottom: 36px;
+  right: 24px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: #69f0ae;
+  text-shadow: 0 1px 2px #000;
+}
+
+#sound.off {
+  color: #90a4ae;
+}
+
+.ghost {
+  margin-top: 6px;
+  padding: 10px 26px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: #cfd8dc;
+  background: #263238;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.ghost:hover {
+  background: #37474f;
+}
+
+.ghost.danger {
+  color: #ff8a80;
+  border-color: rgba(255, 82, 82, 0.4);
+}
+
+#meta-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 24px 16px;
+  background: rgba(6, 10, 14, 0.93);
+  pointer-events: auto;
+  overflow-y: auto;
+  z-index: 40;
+}
+
+#meta-overlay.hidden {
+  display: none;
+}
+
+#meta-title {
+  font-size: 28px;
+  letter-spacing: 4px;
+  color: #ffd54f;
+}
+
+#meta-sub {
+  font-size: 13px;
+  color: #8b98a3;
+  margin: -6px 0 4px;
+}
+
+#meta-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 10px;
+  width: min(780px, 100%);
+}
+
+.meta-section {
+  grid-column: 1 / -1;
+  font-size: 12px;
+  letter-spacing: 2px;
+  color: #78909c;
+  margin-top: 8px;
+}
+
+.meta-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: #141b21;
+  border: 1px solid #263238;
+  border-left: 3px solid var(--c, #4fa3ff);
+  border-radius: 8px;
+}
+
+.meta-row .mi {
+  width: 26px;
+  font-size: 22px;
+  text-align: center;
+  color: var(--c, #4fa3ff);
+}
+
+.meta-row .mtxt {
+  flex: 1;
+}
+
+.meta-row .mname,
+.meta-row .mdesc {
+  display: block;
+}
+
+.meta-row .mname {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.meta-row .mdesc {
+  font-size: 12px;
+  color: #90a4ae;
+}
+
+.meta-row .mlv {
+  font-size: 11px;
+  color: #78909c;
+}
+
+.meta-row button {
+  padding: 8px 12px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: #fff;
+  background: #2e7d32;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.meta-row button:disabled {
+  background: #37474f;
+  color: #78909c;
+  cursor: default;
+}
+
+#meta-actions {
+  display: flex;
+  gap: 12px;
 }
 
 #joystick {
@@ -359,4 +638,66 @@ canvas {
   background: rgba(255, 255, 255, 0.38);
   transform: translate(-50%, -50%);
   pointer-events: none;
+}
+
+@media (max-width: 720px), (max-height: 540px) {
+  #upgrade-overlay,
+  #starter-overlay {
+    gap: 12px;
+    padding: 0 10px;
+  }
+
+  #upgrade-cards,
+  #starter-cards {
+    gap: 8px;
+    max-width: 100%;
+    flex-wrap: nowrap;
+  }
+
+  #upgrade-title,
+  #starter-title {
+    font-size: 22px;
+    letter-spacing: 3px;
+  }
+
+  .upgrade-card {
+    width: 31vw;
+    min-width: 92px;
+    min-height: 0;
+    padding: 10px 7px;
+    gap: 5px;
+    border-radius: 8px;
+  }
+
+  .card-icon {
+    font-size: 24px;
+  }
+
+  .card-name {
+    font-size: 12px;
+  }
+
+  .card-desc {
+    font-size: 10px;
+    line-height: 1.25;
+  }
+
+  .card-stats {
+    font-size: 10px;
+    gap: 2px;
+  }
+
+  .card-stat {
+    padding: 1px 4px;
+  }
+
+  .card-lv {
+    font-size: 10px;
+    letter-spacing: 0;
+  }
+
+  #reroll-btn {
+    padding: 8px 22px;
+    font-size: 12px;
+  }
 }

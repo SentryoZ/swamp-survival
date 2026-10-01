@@ -8,23 +8,44 @@
   </head>
   <body>
     <div id="hud">
+      <div id="vignette"></div>
+      <div id="flash"></div>
+      <div id="dmg-layer"></div>
+      <div id="banner"></div>
       <div id="hp-bar-wrap"><div id="hp-bar"></div></div>
+      <div id="boss-bar-wrap" class="hidden"><div id="boss-bar"></div></div>
       <div id="xp-bar-wrap"><div id="xp-bar"></div></div>
       <div id="level">LVL 1</div>
       <div id="kills">0</div>
       <div id="timer">0:00</div>
       <div id="build"></div>
       <div id="auto">AUTO: ON</div>
+      <div id="sound">SFX: ON</div>
       <div id="joystick" class="hidden"><div id="joystick-knob"></div></div>
       <div id="overlay" class="hidden">
         <h1 id="overlay-title">SWARM SURVIVAL</h1>
-        <p id="overlay-sub">WASD to move &middot; Mouse to aim &middot; Hold LMB to attack</p>
+        <p id="overlay-sub">WASD / drag to move &middot; auto-fire is on &middot; F toggles it &middot; M mutes</p>
         <button id="start-btn">PLAY</button>
+        <button id="meta-btn" class="ghost">META UPGRADES</button>
+      </div>
+      <div id="meta-overlay" class="hidden">
+        <h2 id="meta-title">ESSENCE: 0</h2>
+        <p id="meta-sub">Spend Essence on permanent upgrades for every future run.</p>
+        <div id="meta-list"></div>
+        <div id="meta-actions">
+          <button id="meta-close" class="ghost">CLOSE</button>
+          <button id="meta-reset" class="ghost danger">RESET SAVE</button>
+        </div>
       </div>
       <div id="upgrade-overlay" class="hidden">
         <h2 id="upgrade-title">LEVEL UP</h2>
         <div id="upgrade-cards"></div>
         <button id="reroll-btn">REROLL (1)</button>
+      </div>
+      <div id="starter-overlay" class="hidden">
+        <h2 id="starter-title">CHOOSE YOUR WEAPON</h2>
+        <div id="starter-cards"></div>
+        <button id="starter-meta-btn" class="ghost">META UPGRADES</button>
       </div>
     </div>
     <script type="module" src="/src/main.js"></script>
