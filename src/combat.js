@@ -10,7 +10,7 @@ import {
   gems,
   particles,
 } from "./runtime.js";
-import { removeFx, spawnParticles, spawnGems } from "./fx.js";
+import { removeFx, spawnParticles, spawnGems, spawnCoins } from "./fx.js";
 import { emit, on } from "./events.js";
 import { damageCrate, spawnCrateAt } from "./crates.js";
 import { playSfx } from "./audio.js";
@@ -40,6 +40,18 @@ export function gainLifesteal(amount) {
   if (state.mods.lifesteal > 0) healPlayer(amount * state.mods.lifesteal);
 }
 
+// Player damage that routes through the same hit/death signals as enemies.
+// Dash i-frames make the player briefly untouchable.
+export function damagePlayer(amount) {
+  if (amount <= 0 || state.hp <= 0 || state.invuln > 0) return;
+  state.hp -= amount;
+  emit("hit");
+  if (state.hp <= 0) {
+    state.hp = 0;
+    emit("death");
+  }
+}
+
 // One place that resolves damage and death for every weapon + the main gun.
 export function damageEnemy(e, amount, knock = null) {
   if (e.dying > 0) return;
@@ -54,6 +66,11 @@ export function damageEnemy(e, amount, knock = null) {
   if (e.hp <= 0) {
     spawnParticles(e.group.position.clone().setY(1), e.type.color, e.boss ? 34 : 14);
     spawnGems(e.group.position.clone().setY(0.5), e.xp ?? e.type.xp);
+    const gold = e.boss ? 30 : e.elite ? 6 : Math.random() < 0.5 ? 1 : 0;
+    if (gold > 0) {
+      const coins = e.boss ? 6 : e.elite ? 3 : 1;
+      spawnCoins(e.group.position.clone().setY(0.5), coins, Math.max(1, Math.round(gold / coins)));
+    }
     state.kills++;
     playSfx("kill");
     emit("kill", e.group.position.x, e.group.position.z);
@@ -120,7 +137,7 @@ export function levelUp() {
 export function updateProjectiles(dt) {
   for (let i = projectiles.length - 1; i >= 0; i--) {
     const p = projectiles[i];
-    p.life -= dt;
+    p.moved += p.vel.length() * dt;
     p.mesh.position.addScaledVector(p.vel, dt);
 
     let spent = false;
@@ -160,7 +177,7 @@ export function updateProjectiles(dt) {
       }
     }
 
-    if (spent || p.life <= 0) {
+    if (spent || p.moved >= p.range) {
       removeFx(p.mesh);
       projectiles.splice(i, 1);
     }
@@ -181,11 +198,15 @@ export function updateGems(dt) {
       const pull = Math.min(1, 12 * dt);
       g.mesh.position.lerp(playerGroup.position.clone().setY(0.5), pull);
       if (dist < 0.6) {
-        state.xp += state.mods.xp;
-        const need = GAME.xpToLevel(state.level);
-        if (state.xp >= need) {
-          state.xp -= need;
-          levelUp();
+        if (g.gold) {
+          state.gold += g.gold;
+        } else {
+          state.xp += state.mods.xp;
+          const need = GAME.xpToLevel(state.level);
+          if (state.xp >= need) {
+            state.xp -= need;
+            levelUp();
+          }
         }
         removeFx(g.mesh);
         gems.splice(i, 1);

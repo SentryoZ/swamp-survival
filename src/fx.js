@@ -38,6 +38,30 @@ export function spawnGems(pos, count) {
   }
 }
 
+const coinGeo = new THREE.CylinderGeometry(0.17, 0.17, 0.06, 12);
+const coinMat = new THREE.MeshStandardMaterial({
+  color: 0xffd54f,
+  emissive: 0xffb300,
+  emissiveIntensity: 0.5,
+  roughness: 0.4,
+});
+
+// Gold coins reuse the gem pickup/magnet pipeline (see combat.updateGems).
+export function spawnCoins(pos, count, valueEach) {
+  for (let i = 0; i < count; i++) {
+    const c = sharedMesh(coinGeo, coinMat);
+    c.rotation.x = Math.PI / 2;
+    const offset = new THREE.Vector3(
+      (Math.random() - 0.5) * 2,
+      0.6,
+      (Math.random() - 0.5) * 2
+    );
+    c.position.copy(pos).add(offset);
+    scene.add(c);
+    gems.push({ mesh: c, vel: new THREE.Vector3(0, 3, 0), magnet: false, gold: valueEach });
+  }
+}
+
 export function spawnParticles(pos, color, count = 10) {
   const geo = sphereGeo(0.08, 6);
   const mat = basicMat(color);

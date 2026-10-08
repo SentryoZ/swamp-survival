@@ -1,10 +1,11 @@
 // Keyboard, mouse, and touch input. Exposes `input` for the player module.
 import * as THREE from "three";
 import { renderer, camera, state } from "./runtime.js";
+import { GAME } from "./config.js";
 import { updateAutoHud, updateSoundHud } from "./hud.js";
 import { toggleSound } from "./audio.js";
 
-export const AUTO_RANGE = 40;
+export const AUTO_RANGE = GAME.autoRange;
 export const isTouch =
   window.matchMedia("(pointer: coarse)").matches || "ontouchstart" in window;
 
@@ -13,7 +14,7 @@ const mouse = new THREE.Vector2();
 const raycaster = new THREE.Raycaster();
 const groundPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
 
-export const input = { firing: false };
+export const input = { firing: false, dashQueued: false };
 
 export function getAimPoint() {
   raycaster.setFromCamera(mouse, camera);
@@ -37,8 +38,21 @@ window.addEventListener("keydown", (e) => {
     updateAutoHud();
   } else if (e.code === "KeyM") {
     updateSoundHud(toggleSound());
+  } else if (e.code === "Space") {
+    input.dashQueued = true;
+    e.preventDefault();
   }
 });
+
+// On-screen dash button (mobile).
+const dashBtn = document.getElementById("dash-btn");
+if (dashBtn) {
+  dashBtn.addEventListener("mousedown", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    input.dashQueued = true;
+  });
+}
 
 window.addEventListener("resize", () => {
   camera.aspect = window.innerWidth / window.innerHeight;
@@ -91,7 +105,7 @@ window.addEventListener(
   "touchstart",
   (e) => {
     if (!state.running) return;
-    if (e.target.closest && e.target.closest("#upgrade-overlay, #overlay")) return;
+    if (e.target.closest && e.target.closest("#upgrade-overlay, #overlay, #dash-btn")) return;
     if (!stick.active) stickStart(e.changedTouches[0]);
     e.preventDefault();
   },

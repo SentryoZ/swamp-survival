@@ -2,8 +2,8 @@
 // arrays, and the shared GPU resource caches. Feature modules import from here
 // and never from each other's internals.
 import * as THREE from "three";
-import { createWorld } from "./world.js";
-import { WORLD_SIZE, GAME } from "./config.js";
+import { createWorld, disposeWorld } from "./world.js";
+import { WORLD_SIZE, GAME, BIOMES } from "./config.js";
 
 function showFatalError(msg) {
   document.getElementById("hud").style.display = "none";
@@ -32,8 +32,8 @@ renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 document.body.appendChild(renderer.domElement);
 
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x87ceeb);
-scene.fog = new THREE.Fog(0x87ceeb, 60, 170);
+scene.background = new THREE.Color(BIOMES[0].sky);
+scene.fog = new THREE.Fog(BIOMES[0].sky, BIOMES[0].fogNear, BIOMES[0].fogFar);
 
 const camera = new THREE.PerspectiveCamera(
   55,
@@ -54,7 +54,7 @@ sun.shadow.camera.bottom = -30;
 sun.shadow.camera.far = 200;
 scene.add(sun);
 
-const world = createWorld();
+let world = createWorld(BIOMES[0]);
 scene.add(world.group);
 
 // All sub-weapon visuals live here so a reset can wipe them in one place.
@@ -62,6 +62,22 @@ const fxGroup = new THREE.Group();
 scene.add(fxGroup);
 
 const half = WORLD_SIZE / 2;
+
+// Rebuild the arena for a biome (called at the start of each run).
+export function applyBiome(id) {
+  const biome = BIOMES.find((b) => b.id === id) || BIOMES[0];
+  scene.remove(world.group);
+  disposeWorld(world.group);
+  world = createWorld(biome);
+  scene.add(world.group);
+  scene.background.set(biome.sky);
+  scene.fog.color.set(biome.sky);
+  scene.fog.near = biome.fogNear;
+  scene.fog.far = biome.fogFar;
+  sun.color.set(biome.sun);
+  state.biome = biome.id;
+  return biome;
+}
 
 // ---------- Player ----------
 const playerGroup = new THREE.Group();
@@ -96,8 +112,13 @@ const state = {
   kills: 0,
   time: 0,
   fireCooldown: 0,
+  dashCooldown: 0,
+  dashTime: 0,
+  invuln: 0,
+  dashDir: { x: 0, z: 1 },
   mainWeapon: null,
   starterId: "main",
+  biome: BIOMES[0].id,
   autoFire: true,
   weapons: [],
   fused: new Set(),
@@ -106,6 +127,17 @@ const state = {
   homings: [],
   gasClouds: [],
   crates: [],
+  gold: 0,
+  bonusMaxHp: 0,
+  shopRerolls: 0,
+  shop: null,
+  shopStock: [],
+  shopTimer: 20,
+  shopCooldown: 0,
+  shopping: false,
+  hazards: [],
+  hazardTimer: 4,
+  hazardSlow: 0,
   boss: null,
   bossKills: 0,
   revives: 0,
@@ -189,6 +221,8 @@ const hud = {
   level: document.getElementById("level"),
   kills: document.getElementById("kills"),
   timer: document.getElementById("timer"),
+  gold: document.getElementById("gold"),
+  dashBtn: document.getElementById("dash-btn"),
   overlay: document.getElementById("overlay"),
   title: document.getElementById("overlay-title"),
   sub: document.getElementById("overlay-sub"),
@@ -205,6 +239,9 @@ const hud = {
   metaOverlay: document.getElementById("meta-overlay"),
   metaTitle: document.getElementById("meta-title"),
   metaList: document.getElementById("meta-list"),
+  shopOverlay: document.getElementById("shop-overlay"),
+  shopTitle: document.getElementById("shop-title"),
+  shopList: document.getElementById("shop-list"),
 };
 
 export {

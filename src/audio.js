@@ -98,6 +98,10 @@ const SFX = {
     tone("sine", 1700, 0.18, 0.08, { delay: 0.05 });
   },
   death: () => tone("sawtooth", 300, 0.6, 0.28, { to: 60 }),
+  dash: () => {
+    noise(0.16, 0.14, 1800);
+    tone("sine", 760, 0.16, 0.12, { to: 220 });
+  },
   ui: () => tone("square", 520, 0.05, 0.14, { to: 620 }),
 };
 

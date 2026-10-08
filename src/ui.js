@@ -1,5 +1,5 @@
 // Menus, HUD-driven flows: reset, pause/game-over, upgrade picker, starters.
-import { WEAPONS, PASSIVES, TIERS, FUSIONS, GAME, META } from "./config.js";
+import { WEAPONS, PASSIVES, TIERS, FUSIONS, GAME, META, BIOMES } from "./config.js";
 import {
   hud,
   scene,
@@ -11,11 +11,14 @@ import {
   particles,
   playerGroup,
   camTarget,
+  applyBiome,
 } from "./runtime.js";
 import { removeFx } from "./fx.js";
 import { addWeapon, removeWeapon, clearWeapons } from "./weapons.js";
 import { clearCrates } from "./crates.js";
 import { resetWaves } from "./waves.js";
+import { clearHazards } from "./hazards.js";
+import { clearShop, closeShop } from "./shop.js";
 import { computeMods, weaponBaseStats, weaponPreview } from "./stats.js";
 import { healPlayer } from "./combat.js";
 import { updateHud, updateBuildHud } from "./hud.js";
@@ -53,7 +56,15 @@ export function resetGame() {
   gems.length = 0;
   clearWeapons();
   clearCrates();
+  clearHazards();
+  clearShop();
   resetWaves();
+  state.gold = 0;
+  state.bonusMaxHp = 0;
+  state.shopRerolls = 0;
+  state.dashCooldown = 0;
+  state.dashTime = 0;
+  state.invuln = 0;
   state.weapons.length = 0;
   state.homings.length = 0;
   state.gasClouds.length = 0;
@@ -273,7 +284,8 @@ export function showUpgrades() {
   }
   state.upgrading = true;
   state.running = false;
-  state.rerolls = GAME.rerollsPerLevel + metaBonuses().rerolls;
+  state.rerolls = GAME.rerollsPerLevel + metaBonuses().rerolls + state.shopRerolls;
+  state.shopRerolls = 0;
   hud.upgradeTitle.textContent = `LEVEL ${state.level}`;
   renderUpgradeCards();
   hud.upgradeOverlay.classList.remove("hidden");
@@ -309,16 +321,30 @@ export function showStarters() {
   hud.starterOverlay.classList.remove("hidden");
 }
 
-function startRun(id) {
-  playSfx("ui");
-  state.starterId = id;
+// Pick a biome different from the last one, then rebuild the arena.
+function pickBiome() {
+  const options = BIOMES.filter((b) => b.id !== state.biome);
+  const pool = options.length ? options : BIOMES;
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+function beginRun() {
   resetGame();
   const mb = metaBonuses();
   state.pendingLevels += mb.startLevel;
   state.revives = mb.revives;
+  const biome = applyBiome(pickBiome().id);
   hud.starterOverlay.classList.add("hidden");
+  hud.overlay.classList.add("hidden");
   state.phase = "playing";
   state.running = true;
+  emit("biome", biome.name, biome.accent);
+}
+
+function startRun(id) {
+  playSfx("ui");
+  state.starterId = id;
+  beginRun();
 }
 
 // ---------- Meta upgrade shop ----------
@@ -412,15 +438,13 @@ function closeMeta() {
 // ---------- Wiring owned by the UI ----------
 hud.startBtn.addEventListener("click", () => {
   playSfx("ui");
-  hud.overlay.classList.add("hidden");
   if (state.phase === "paused") {
+    hud.overlay.classList.add("hidden");
     state.phase = "playing";
     state.running = true;
     return;
   }
-  resetGame();
-  state.phase = "playing";
-  state.running = true;
+  beginRun();
 });
 
 hud.rerollBtn.addEventListener("click", () => {
@@ -430,6 +454,10 @@ hud.rerollBtn.addEventListener("click", () => {
   renderUpgradeCards();
 });
 
+document.getElementById("shop-close").addEventListener("click", () => {
+  playSfx("ui");
+  closeShop();
+});
 document.getElementById("meta-btn").addEventListener("click", openMeta);
 document.getElementById("starter-meta-btn").addEventListener("click", openMeta);
 document.getElementById("meta-close").addEventListener("click", closeMeta);

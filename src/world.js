@@ -1,12 +1,12 @@
 import * as THREE from "three";
 import { WORLD_SIZE } from "./config.js";
 
-export function createWorld() {
+export function createWorld(biome) {
   const group = new THREE.Group();
 
   const groundGeo = new THREE.PlaneGeometry(WORLD_SIZE, WORLD_SIZE);
   const groundMat = new THREE.MeshStandardMaterial({
-    color: 0x2d5a3d,
+    color: biome.ground,
     roughness: 1,
   });
   const ground = new THREE.Mesh(groundGeo, groundMat);
@@ -14,11 +14,11 @@ export function createWorld() {
   ground.receiveShadow = true;
   group.add(ground);
 
-  const grid = new THREE.GridHelper(WORLD_SIZE, 40, 0x1e3b27, 0x1e3b27);
+  const grid = new THREE.GridHelper(WORLD_SIZE, 40, biome.grid, biome.grid);
   grid.position.y = 0.02;
   group.add(grid);
 
-  const borderMat = new THREE.MeshStandardMaterial({ color: 0x4a2a1a });
+  const borderMat = new THREE.MeshStandardMaterial({ color: biome.border });
   const borderGeo = new THREE.BoxGeometry(2, 3, WORLD_SIZE);
   const half = WORLD_SIZE / 2;
   const borders = [
@@ -38,13 +38,15 @@ export function createWorld() {
 
   const obstacles = [];
   const rockMat = new THREE.MeshStandardMaterial({
-    color: 0x6d6d6d,
+    color: biome.rock,
     roughness: 0.9,
     flatShading: true,
   });
 
-  const rand = mulberry32(1337);
-  const count = 70;
+  let seed = 1337;
+  for (const ch of biome.id) seed = (seed * 31 + ch.charCodeAt(0)) | 0;
+  const rand = mulberry32(seed);
+  const count = biome.rocks;
   for (let i = 0; i < count; i++) {
     const radius = 0.6 + rand() * 1.6;
     const h = radius * (0.7 + rand() * 0.6);
@@ -65,9 +67,9 @@ export function createWorld() {
     });
   }
 
-  const treeMatTrunk = new THREE.MeshStandardMaterial({ color: 0x5d3b1e });
-  const treeMatLeaf = new THREE.MeshStandardMaterial({ color: 0x2f7d3a });
-  const treeCount = 40;
+  const treeMatTrunk = new THREE.MeshStandardMaterial({ color: biome.trunk });
+  const treeMatLeaf = new THREE.MeshStandardMaterial({ color: biome.leaf });
+  const treeCount = biome.trees;
   for (let i = 0; i < treeCount; i++) {
     const x = (rand() * 2 - 1) * (half - 4);
     const z = (rand() * 2 - 1) * (half - 4);
@@ -90,6 +92,16 @@ export function createWorld() {
   }
 
   return { group, obstacles };
+}
+
+// Free the geometries/materials of a scene group (called when swapping biomes).
+export function disposeWorld(group) {
+  const mats = new Set();
+  group.traverse((o) => {
+    if (o.geometry) o.geometry.dispose();
+    if (o.material) mats.add(o.material);
+  });
+  for (const m of mats) m.dispose();
 }
 
 function mulberry32(a) {

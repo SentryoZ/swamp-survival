@@ -14,7 +14,7 @@ import { circleVsObstacles, moveWithObstacles, separateCircles } from "./collisi
 import { removeFx, spawnParticles } from "./fx.js";
 import { sphereGeo, basicMat, coneGeo, stdMat, sharedMesh } from "./runtime.js";
 import { updateHud } from "./hud.js";
-import { emit } from "./events.js";
+import { damagePlayer } from "./combat.js";
 import { playSfx } from "./audio.js";
 
 for (const t of Object.values(ENEMY_TYPES)) preloadModel(t.model);
@@ -156,7 +156,7 @@ export function enemyFire(e, t) {
     mesh,
     vel: dir.clone().multiplyScalar(t.projectileSpeed),
     damage: e.damage ?? t.damage,
-    life: 3,
+    life: 2.2,
   });
   if (e.model && e.anim !== "fire") {
     e.model.play("fire", 1.5);
@@ -252,14 +252,9 @@ export function updateEnemies(dt) {
     e.group.rotation.y += (targetYaw - e.group.rotation.y) * Math.min(1, 10 * dt);
 
     if (dist < t.radius + PLAYER.radius + 0.4) {
-      state.hp -= e.damage * dt;
-      emit("hit");
-      playSfx("hurt");
-      if (state.hp <= 0) {
-        state.hp = 0;
-        emit("death");
-        return;
-      }
+      damagePlayer(e.damage * dt);
+      if (state.invuln <= 0) playSfx("hurt");
+      if (state.hp <= 0) return;
       updateHud();
     }
   }
@@ -299,15 +294,10 @@ export function updateEnemyProjectiles(dt) {
     const dx = p.mesh.position.x - playerGroup.position.x;
     const dz = p.mesh.position.z - playerGroup.position.z;
     if (dx * dx + dz * dz < (PLAYER.radius + 0.3) ** 2) {
-      state.hp -= p.damage;
-      emit("hit");
-      playSfx("hurt");
+      damagePlayer(p.damage);
+      if (state.invuln <= 0) playSfx("hurt");
       spawnParticles(p.mesh.position.clone(), 0x00bcd4, 8);
-      if (state.hp <= 0) {
-        state.hp = 0;
-        emit("death");
-        return;
-      }
+      if (state.hp <= 0) return;
       updateHud();
       hit = true;
     } else if (circleVsObstacles(p.mesh.position.x, p.mesh.position.z, 0.15)) {

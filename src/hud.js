@@ -8,11 +8,14 @@ export function updateHud() {
   hud.xp.style.width = `${(state.xp / need) * 100}%`;
   hud.level.textContent = `LVL ${state.level}`;
   hud.kills.textContent = `${state.kills} KILLS`;
+  hud.gold.textContent = `${state.gold} G`;
   const m = Math.floor(state.time / 60);
   const s = Math.floor(state.time % 60)
     .toString()
     .padStart(2, "0");
   hud.timer.textContent = `${m}:${s}`;
+
+  if (hud.dashBtn) hud.dashBtn.classList.toggle("cooling", state.dashCooldown > 0);
 
   const frac = state.hp / state.maxHp;
   hud.vignette.style.opacity =

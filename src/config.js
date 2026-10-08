@@ -106,6 +106,8 @@ export const GAME = {
   startFireRate: 3,
   baseDamage: 12,
   projectileSpeed: 34,
+  autoRange: 26,
+  playerShotRange: 32,
   maxEnemies: 160,
   enemyScalePerMinute: 1.2,
   maxWeapons: 5,
@@ -134,6 +136,70 @@ export const META = {
   fortune: { name: "Fortune", icon: "\u29d7", desc: "+1 reroll per level-up", maxLevel: 2, per: 1, stat: "rerolls", cost: (l) => 120 + l * 120 },
   veteran: { name: "Veteran", icon: "\u2605", desc: "Start at level 1+N", maxLevel: 3, per: 1, stat: "startLevel", cost: (l) => 800 + l * 600 },
   guardian: { name: "Guardian", icon: "\u271a", desc: "Revive once per run at 50% HP", maxLevel: 1, per: 1, stat: "revives", cost: () => 2000 },
+};
+
+// Per-run environments. One is picked (and the arena rebuilt) each run.
+export const BIOMES = [
+  {
+    id: "swamp", name: "The Mire", accent: "#7bd88f",
+    sky: 0x87ceeb, fogNear: 60, fogFar: 170, sun: 0xfff2cc,
+    ground: 0x2d5a3d, grid: 0x1e3b27, border: 0x4a2a1a,
+    rock: 0x6d6d6d, trunk: 0x5d3b1e, leaf: 0x2f7d3a, rocks: 70, trees: 40,
+  },
+  {
+    id: "ash", name: "Ashlands", accent: "#ff8a65",
+    sky: 0x5a4038, fogNear: 40, fogFar: 130, sun: 0xffb080,
+    ground: 0x3a2c26, grid: 0x2a1e19, border: 0x2a1a14,
+    rock: 0x4d4a48, trunk: 0x3a2a22, leaf: 0x7a4a2a, rocks: 95, trees: 18,
+  },
+  {
+    id: "frost", name: "Frostfen", accent: "#81d4fa",
+    sky: 0xcfe6f5, fogNear: 50, fogFar: 150, sun: 0xe8f2ff,
+    ground: 0xc9d6de, grid: 0xa9bcc9, border: 0x8fa3ad,
+    rock: 0x9fb2bc, trunk: 0x5d4037, leaf: 0x6f9c86, rocks: 55, trees: 48,
+  },
+  {
+    id: "ember", name: "Emberwaste", accent: "#ff7043",
+    sky: 0x6b3a2a, fogNear: 35, fogFar: 115, sun: 0xff9a5a,
+    ground: 0x4a2b23, grid: 0x331d17, border: 0x2a1510,
+    rock: 0x3a3535, trunk: 0x4a2a1a, leaf: 0x9a3a1a, rocks: 85, trees: 22,
+  },
+];
+
+// Biome hazards: telegraphed ground effects that threaten the player (and can
+// be used against enemies). One entry per biome id.
+export const HAZARDS = {
+  // choking bog: slows + rots anything standing in it
+  swamp: { kind: "bog", color: "#7bd88f", interval: 6.5, telegraph: 1.0, duration: 5.0, radius: 3.2, dps: 6, slow: 0.4 },
+  // burning ground: heavy damage to player and enemies
+  ash: { kind: "fire", color: "#ff7043", interval: 5.5, telegraph: 0.9, duration: 4.5, radius: 3.0, dps: 12 },
+  // ice sheet: strong slow, light chill damage
+  frost: { kind: "ice", color: "#81d4fa", interval: 6.0, telegraph: 0.8, duration: 5.0, radius: 3.2, dps: 3, slow: 0.5 },
+  // ember strike: telegraphed meteor that bursts for heavy damage
+  ember: { kind: "ember", color: "#ffab40", interval: 4.5, telegraph: 0.9, duration: 0.3, radius: 2.4, damage: 26 },
+};
+
+// In-run merchant: spawn cadence and its stock. Gold is run-scoped (lost on
+// death); Essence is the persistent meta currency — the two never mix.
+export const SHOP = {
+  every: 75,
+  stay: 26,
+  reach: 2.4,
+  services: [
+    { id: "potion", name: "Potion", icon: "\u2764", desc: "Heal 30 HP", cost: 12 },
+    { id: "reroll", name: "Reroll", icon: "\u29d7", desc: "+1 reroll", cost: 15 },
+    { id: "anvil", name: "Anvil", icon: "\u271a", desc: "+15 max HP, heals 15", cost: 35 },
+    { id: "bomb", name: "Bomb", icon: "\u2622", desc: "Detonate the arena", cost: 20 },
+  ],
+  weaponCost: { common: 25, uncommon: 35, rare: 50 },
+};
+
+// Dash / dodge: a burst of movement on a cooldown, with brief invulnerability.
+export const DASH = {
+  cooldown: 2.6,
+  duration: 0.16,
+  speed: 34,
+  invuln: 0.3,
 };
 
 export const TIERS = {

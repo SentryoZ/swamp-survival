@@ -3,3 +3,4 @@ dist/
 public/demo.png
 *.log
 .DS_Store
+/.commandcode/

@@ -30,7 +30,7 @@ export function computeMods() {
   m.xp *= mb.xp;
   m.maxHpAdd += mb.maxHp;
   state.mods = m;
-  state.maxHp = GAME.startHp + m.maxHpAdd;
+  state.maxHp = GAME.startHp + m.maxHpAdd + state.bonusMaxHp;
   if (state.hp > state.maxHp) state.hp = state.maxHp;
 }
 

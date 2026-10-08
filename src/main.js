@@ -10,6 +10,8 @@ import { updateFx } from "./fx.js";
 import { updateJuice } from "./juice.js";
 import { spawnCrate, updateCrates } from "./crates.js";
 import { updateWaves } from "./waves.js";
+import { updateHazards } from "./hazards.js";
+import { updateShop } from "./shop.js";
 import { CRATES } from "./config.js";
 import { updateHud, updateAutoHud, updateSoundHud } from "./hud.js";
 import { resetGame, pause, showUpgrades, showStarters } from "./ui.js";
@@ -49,6 +51,8 @@ function animate(now) {
     }
     updateCrates(dt);
     updateWaves(dt);
+    updateHazards(dt);
+    updateShop(dt);
 
     if (state.time > 0) updateHud();
 

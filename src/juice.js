@@ -26,7 +26,11 @@ export function banner(text, color) {
   hud.banner.classList.add("show");
 }
 
+let lastFlash = 0;
 function flash() {
+  const now = performance.now();
+  if (now - lastFlash < 220) return; // don't strobe while standing in a hazard
+  lastFlash = now;
   hud.flash.classList.remove("show");
   void hud.flash.offsetWidth;
   hud.flash.classList.add("show");
@@ -70,3 +74,5 @@ on("powerup", (pick) => {
 });
 on("fuse", (name, color) => banner(`FUSED \u00b7 ${name}`, color));
 on("boss", () => banner("BOSS", "#d500f9"));
+on("biome", (name, accent) => banner(name, accent));
+on("merchant", () => banner("MERCHANT", "#ffd54f"));

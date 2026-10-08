@@ -1,6 +1,6 @@
 // Player visual, camera follow, movement, aiming, and the starter weapons.
 import * as THREE from "three";
-import { PLAYER, WEAPONS, CRATES } from "./config.js";
+import { GAME, PLAYER, WEAPONS, CRATES, DASH } from "./config.js";
 import {
   scene,
   camera,
@@ -116,7 +116,8 @@ function fireShot(s, base, def) {
       damage: rollDamage(s.damage),
       pierce: s.pierce || 0,
       hit: new Set(),
-      life: 1.6,
+      moved: 0,
+      range: GAME.playerShotRange,
     });
   }
 }
@@ -199,6 +200,9 @@ function fireArc(s, dir, def) {
 }
 
 export function updatePlayer(dt) {
+  state.dashCooldown = Math.max(0, state.dashCooldown - dt);
+  state.invuln = Math.max(0, state.invuln - dt);
+
   const move = new THREE.Vector3();
   if (keys["KeyW"]) move.z -= 1;
   if (keys["KeyS"]) move.z += 1;
@@ -208,9 +212,53 @@ export function updatePlayer(dt) {
     move.x += stick.dx;
     move.z += stick.dy;
   }
+  const hasInput = move.lengthSq() > 0;
 
-  if (move.lengthSq() > 0) {
-    move.normalize().multiplyScalar(PLAYER.speed * state.mods.speed * dt);
+  // Dash in the input direction (or facing, if standing still).
+  if (input.dashQueued) {
+    input.dashQueued = false;
+    if (state.dashCooldown <= 0 && state.dashTime <= 0) {
+      if (hasInput) {
+        move.normalize();
+        state.dashDir = { x: move.x, z: move.z };
+      } else {
+        state.dashDir = {
+          x: Math.sin(playerGroup.rotation.y),
+          z: Math.cos(playerGroup.rotation.y),
+        };
+      }
+      state.dashTime = DASH.duration;
+      state.invuln = DASH.invuln;
+      state.dashCooldown = DASH.cooldown;
+      playSfx("dash");
+    }
+  }
+
+  const speedMul = state.mods.speed * (1 - state.hazardSlow);
+  if (state.dashTime > 0) {
+    state.dashTime -= dt;
+    const step = DASH.speed * dt;
+    const moved = moveWithObstacles(
+      playerGroup.position.x,
+      playerGroup.position.z,
+      state.dashDir.x * step,
+      state.dashDir.z * step,
+      PLAYER.radius,
+      1
+    );
+    playerGroup.position.x = THREE.MathUtils.clamp(
+      moved.x,
+      -half + PLAYER.radius,
+      half - PLAYER.radius
+    );
+    playerGroup.position.z = THREE.MathUtils.clamp(
+      moved.z,
+      -half + PLAYER.radius,
+      half - PLAYER.radius
+    );
+    spawnParticles(playerGroup.position.clone().setY(0.6), 0x9be7ff, 2);
+  } else if (hasInput) {
+    move.normalize().multiplyScalar(PLAYER.speed * speedMul * dt);
     const moved = moveWithObstacles(
       playerGroup.position.x,
       playerGroup.position.z,
